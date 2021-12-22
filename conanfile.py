@@ -40,7 +40,6 @@ class CodeSign:
         flags = self.options.codesign_flags or ""
         exts = []
         if self.options.codesign or identity:
-            identity = str(identity)
             if self.settings.os == "Windows":
                 cmd = 'signtool sign '
                 if identity:
@@ -48,7 +47,6 @@ class CodeSign:
                 else:
                     cmd += '/a '
                 args = [
-                    ('/n', self.options.codesign_identity),
                     ('/s', self.options.codesign_store),
                     ('/fd', self.options.codesign_digest),
                     ('/t', self.options.codesign_timestamp),
@@ -59,7 +57,7 @@ class CodeSign:
                         cmd += f"{flag} {value} "
             elif is_apple_os(self.settings.os):
                 if identity:
-                    identity = "Developer ID Application: " + str(identity)
+                    identity = f"Developer ID Application: {identity}"
                 else:
                     identity = "-"
                 cmd = f'codesign -s "{identity}" '
