@@ -1,6 +1,6 @@
 import os
 
-from conans import ConanFile
+from conans import ConanFile, tools
 from conans.client.tools.apple import is_apple_os
 
 
@@ -27,11 +27,12 @@ class CodeSign:
     def verify(self, filename, verbose=False):
         if self.options.codesign or self.options.codesign_identity:
             if self.settings.os == "Windows":
+                vcvars_command = tools.vcvars_command(self)
                 flags = '/v ' if verbose else '/q '
-                self.run('signtool verify {}"{}"'.format(flags, filename))
+                self.run(f'{vcvars_command} && signtool verify {flags}"{filename}"')
             elif is_apple_os(self.settings.os):
                 flags = 'v' if verbose else ''
-                self.run('codesign -v{} "{}"'.format(flags, filename))
+                self.run(f'codesign -v{flags} "{filename}"')
 
     @property
     def _signcmd(self):
@@ -66,7 +67,11 @@ class CodeSign:
         return cmd
 
     def _codesign(self, cmd, filename):
-        self.run(cmd + '"{}"'.format(filename))
+        if self.settings.os == "Windows":
+            vcvars_command = tools.vcvars_command(self)
+            self.run(f'{vcvars_command} && {cmd}"{filename}"')
+        else:
+            self.run(f'{cmd}"{filename}"')
 
     def codesign(self, basedir, filename=None, filenames=[]):
         cmd = self._signcmd
