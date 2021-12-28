@@ -50,7 +50,7 @@ class CodeSign:
                 args = [
                     ('/s', self.options.codesign_store),
                     ('/fd', self.options.codesign_digest),
-                    ('/t', self.options.codesign_timestamp),
+                    ('/tr', self.options.codesign_timestamp),
                     ('/td', self.options.codesign_timestamp_digest),
                 ]
                 for flag, value in args:
