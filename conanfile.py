@@ -7,6 +7,7 @@ from conans.client.tools.apple import is_apple_os
 class CodeSign:
     options = {
         "codesign": [False, True],
+        "codesign_path": "ANY",
         "codesign_identity": "ANY",
         "codesign_store": "ANY",
         "codesign_digest": "ANY",
@@ -16,6 +17,7 @@ class CodeSign:
     }
     default_options = {
         "codesign": False,
+        "codesign_path": None,
         "codesign_identity": None,
         "codesign_store": "MY",
         "codesign_digest": "sha256",
@@ -42,7 +44,8 @@ class CodeSign:
         exts = []
         if self.options.codesign or identity:
             if self.settings.os == "Windows":
-                cmd = 'signtool sign '
+                signtool = self.options.codesign_path or 'signtool'
+                cmd = f'{signtool} sign '
                 if identity:
                     cmd += f'/n "{identity}" '
                 else:
@@ -57,11 +60,12 @@ class CodeSign:
                     if value:
                         cmd += f"{flag} {value} "
             elif is_apple_os(self.settings.os):
+                codesign = self.options.codesign or 'codesign'
                 if identity:
                     identity = f"Developer ID Application: {identity}"
                 else:
                     identity = "-"
-                cmd = f'codesign -s "{identity}" '
+                cmd = f'{codesign} -s "{identity}" '
             if cmd and flags:
                 cmd += flags + ' '
         return cmd
