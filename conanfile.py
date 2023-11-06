@@ -1,19 +1,19 @@
 import os
 
-from conans import ConanFile, tools
-from conans.client.tools.apple import is_apple_os
+from conan import ConanFile
+from conan.tools.apple import is_apple_os
 
 
 class CodeSign:
     options = {
         "codesign": [False, True],
-        "codesign_path": "ANY",
-        "codesign_identity": "ANY",
-        "codesign_store": "ANY",
-        "codesign_digest": "ANY",
-        "codesign_timestamp": "ANY",
-        "codesign_timestamp_digest": "ANY",
-        "codesign_flags": "ANY",
+        "codesign_path": ["ANY", None],
+        "codesign_identity": ["ANY", None],
+        "codesign_store": ["ANY", None],
+        "codesign_digest": ["ANY", None],
+        "codesign_timestamp": ["ANY", None],
+        "codesign_timestamp_digest": ["ANY", None],
+        "codesign_flags": ["ANY", None],
     }
     default_options = {
         "codesign": False,
@@ -32,7 +32,7 @@ class CodeSign:
                 vcvars_command = tools.vcvars_command(self)
                 flags = '/v ' if verbose else '/q '
                 self.run(f'{vcvars_command} && signtool verify {flags}"{filename}"')
-            elif is_apple_os(self.settings.os):
+            elif is_apple_os(self):
                 flags = 'v' if verbose else ''
                 self.run(f'codesign -v{flags} "{filename}"')
 
@@ -59,7 +59,7 @@ class CodeSign:
                 for flag, value in args:
                     if value:
                         cmd += f"{flag} {value} "
-            elif is_apple_os(self.settings.os):
+            elif is_apple_os(self):
                 codesign = self.options.codesign or 'codesign'
                 if identity:
                     identity = f"Developer ID Application: {identity}"
@@ -85,7 +85,7 @@ class CodeSign:
                 return
             if self.settings.os == "Windows":
                 exts = [".dll", ".exe"]
-            elif is_apple_os(self.settings.os):
+            elif is_apple_os(self):
                 exts = [".dylib", ".bundle", ".framework", ".app"]
             if filename or filenames:
                 exts = []
@@ -102,3 +102,4 @@ class CodeSign:
 class CodesignConan(ConanFile):
     name = "codesign"
     version = "1.0"
+    package_type = "python-require"
