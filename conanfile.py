@@ -28,7 +28,7 @@ class CodeSign:
 
     def _vcvars_command(self):
         try:
-            from conan import tools
+            from conans import tools
             return tools.vcvars_command(self)
         except ImportError:
             # Conan 2
