@@ -26,10 +26,31 @@ class CodeSign:
         "codesign_flags": None,
     }
 
+    def _vcvars_command(self):
+        try:
+            from conan import tools
+            return tools.vcvars_command(self)
+        except ImportError:
+            # Conan 2
+            from conan.tools.microsoft.visual import vcvars_command, vs_ide_version, _vcvars_vers, _vcvars_arch
+
+            conanfile = self
+            vs_install_path = conanfile.conf.get("tools.microsoft.msbuild:installation_path")
+            vs_version = vs_ide_version(conanfile)
+            vcvars_ver = _vcvars_vers(conanfile, compiler, vs_version)
+            vcvarsarch = _vcvars_arch(conanfile)
+
+            winsdk_version = conanfile.conf.get("tools.microsoft:winsdk_version", check_type=str)
+            winsdk_version = winsdk_version or conanfile.settings.get_safe("os.version")
+            vcvars = vcvars_command(vs_version, architecture=vcvarsarch, platform_type=None,
+                                    winsdk_version=winsdk_version, vcvars_ver=vcvars_ver,
+                                    vs_install_path=vs_install_path)
+            return vcvars
+
     def verify(self, filename, verbose=False):
         if self.options.codesign or self.options.codesign_identity:
             if self.settings.os == "Windows":
-                vcvars_command = tools.vcvars_command(self)
+                vcvars_command = self._vcvars_command()
                 flags = '/v ' if verbose else '/q '
                 self.run(f'{vcvars_command} && signtool verify {flags}"{filename}"')
             elif is_apple_os(self):
@@ -72,7 +93,7 @@ class CodeSign:
 
     def _codesign(self, cmd, filename):
         if self.settings.os == "Windows":
-            vcvars_command = tools.vcvars_command(self)
+            vcvars_command = self._vcvars_command()
             self.run(f'{vcvars_command} && {cmd}"{filename}"')
         else:
             self.run(f'{cmd}"{filename}"')
