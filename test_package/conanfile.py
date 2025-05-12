@@ -32,4 +32,6 @@ class CodeSignTestConan(ConanFile):
         bin_path = os.path.join(self.cpp.build.bindirs[0], "test_package")
         if can_run(self):
             self.run(bin_path)
+        if self.settings.os == "Windows":
+            bin_path += ".exe"
         self.verify(bin_path, verbose=True)
