@@ -50,7 +50,8 @@ class CodeSign:
         if self.options.codesign or self.options.codesign_identity:
             if self.settings.os == "Windows":
                 vcvars_command = self._vcvars_command()
-                flags = '/v ' if verbose else '/q '
+                flags = '/pa '
+                flags += '/v ' if verbose else '/q '
                 self.run(f'{vcvars_command} && signtool verify {flags}"{filename}"')
             elif is_apple_os(self):
                 flags = 'v' if verbose else ''
