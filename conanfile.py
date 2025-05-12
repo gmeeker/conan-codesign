@@ -32,12 +32,11 @@ class CodeSign:
             return tools.vcvars_command(self)
         except ImportError:
             # Conan 2
-            from conan.tools.microsoft.visual import vcvars_command, vs_ide_version, _vcvars_vers, _vcvars_arch
+            from conan.tools.microsoft.visual import vcvars_command, vs_ide_version, _vcvars_versions, _vcvars_arch
 
             conanfile = self
             vs_install_path = conanfile.conf.get("tools.microsoft.msbuild:installation_path")
-            vs_version = vs_ide_version(conanfile)
-            vcvars_ver = _vcvars_vers(conanfile, compiler, vs_version)
+            vs_version, vcvars_ver = _vcvars_versions(conanfile)
             vcvarsarch = _vcvars_arch(conanfile)
 
             winsdk_version = conanfile.conf.get("tools.microsoft:winsdk_version", check_type=str)
@@ -123,4 +122,5 @@ class CodeSign:
 class CodesignConan(ConanFile):
     name = "codesign"
     version = "1.0"
+    license = "MIT"
     package_type = "python-require"
